@@ -5,7 +5,7 @@ import { Routes, Route, useNavigate } from "react-router-dom"
 import Results from "./Results";
 function Quiz() {
     let intervalId;
-    let timeoutId;
+    let timeoutId; 
     let navigate = useNavigate()
     let questions = [
         {
@@ -85,16 +85,20 @@ function Quiz() {
     }
     useEffect(() => {
         if(currQuestion<questions.length){
-            timeoutId = setTimeout(() => {
+          let timeoutId = setTimeout(() => {
+                console.log("time-out")
                 updateQuestion()
                 setWidth(100)
             }, 5500);
-            intervalId = setInterval(() => {
+           let intervalId = setInterval(() => {
+            console.log("interval")
                 setWidth((currWidth) => currWidth - 5)
             }, 250)
             return () => {
+                console.log(intervalId)
                 clearInterval(intervalId)
-                clearTimeout(timeoutId)
+                // console.log(intervalId)
+                // clearTimeout(timeoutId)
             }
         }
     }, [currQuestion])

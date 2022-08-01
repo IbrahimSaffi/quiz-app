@@ -39,11 +39,15 @@ button:hover {
     cursor: pointer;
 }
 .bar {
-    width: 100%;
+    width: 100vw;
     height: 60px;
     background-color: wheat;
     transition-property: all;
     transition-duration: 500ms;
+    transition-timing-function: linear;
+    position: absolute;
+    left: 0;
+    bottom: 0;
 }
 .results {
     display: flex;
