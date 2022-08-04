@@ -3,9 +3,14 @@ import Option from "./Option"
 import { useEffect, useState } from "react"
 import { Routes, Route, useNavigate } from "react-router-dom"
 import Results from "./Results";
+import Confetti from 'react-dom-confetti';
+
+const config ={
+    elementCount :200
+}
+let intervalId;
+let timeoutId;
 function Quiz() {
-    let intervalId;
-    let timeoutId; 
     let navigate = useNavigate()
     let questions = [
         {
@@ -52,53 +57,60 @@ function Quiz() {
     let [selected, setSelected] = useState(null)
     let [currQuestion, setQuestion] = useState(0)
     let [currWidth, setWidth] = useState(100)
-    let [score,setScore] = useState(0)
-    let [ansArr ,setAnsArr] = useState([])
+    let [score, setScore] = useState(0)
+    let [ansArr, setAnsArr] = useState([])
+    let [confetiDisplay,setDisplay] = useState(false)
     function updateSelected(ele, i) {
+        if(selected===null){
+       if(ele.isCorrect){
+           setDisplay(true)
+       }
+
         setTimeout(() => {
             updateQuestion(ele, i)
             setSelected(null)
-        }, 1000)
+            setDisplay(false)
+            }, 1000)
         setSelected(i)
+        }
     }
     function updateQuestion(ele, i) {
-        let tempArr = ansArr.slice()
-        console.log("here")
-        setWidth(100)
-        if(typeof(ele)!=="undefined"&&ele.isCorrect){
-         setScore(score+1)
-         tempArr.push(ele)
-        }
-        else if(typeof(ele)==="undefined"){
-            tempArr.push("Time ran out")
-        }
-        else {
-            tempArr.push(ele)
-        }
+            setWidth(100)
+            let tempArr = ansArr.slice()
+            console.log("here")
+            if (typeof (ele) !== "undefined" && ele.isCorrect) {
+                setScore(score + 1)
+                tempArr.push(ele)
+            }
+            else if (typeof (ele) === "undefined") {
+                tempArr.push({ text: "Time ran out", isCorrect: false })
+            }
+            else {
+                tempArr.push(ele)
+            }
             let nextQuestion = currQuestion + 1
             setQuestion(nextQuestion)
             setAnsArr(tempArr)
-            console.log(ansArr)
-            if(nextQuestion>=questions.length){
-                navigate("/results")
+            if (nextQuestion >= questions.length) {
+                    navigate("/results")
+
             }
-    }
+
+        }
     useEffect(() => {
-        if(currQuestion<questions.length){
-          let timeoutId = setTimeout(() => {
+        if (currQuestion < questions.length) {
+            timeoutId = setTimeout(() => {
                 console.log("time-out")
                 updateQuestion()
                 setWidth(100)
-            }, 5500);
-           let intervalId = setInterval(() => {
-            console.log("interval")
-                setWidth((currWidth) => currWidth - 5)
-            }, 250)
+            }, 5000);
+            intervalId = setInterval(() => {
+                console.log("interval")
+                setWidth((currWidth) => currWidth - 0.1)
+            }, 5)
             return () => {
-                console.log(intervalId)
                 clearInterval(intervalId)
-                // console.log(intervalId)
-                // clearTimeout(timeoutId)
+                clearTimeout(timeoutId)
             }
         }
     }, [currQuestion])
@@ -106,29 +118,32 @@ function Quiz() {
         <div className="quiz">
             <Routes>
                 <Route path="/" element={
-                currQuestion<questions.length&&
-                <div className="card" >
-                 <h1 className="score">Score :{score}</h1>
-                <Question question={questions[currQuestion].question} className="question" />
-                    <div className="options">
-                        {questions[currQuestion].answer.map((ele, i) =>
-                            <Option
-                                click={() => { updateSelected(ele, i) }}
-                                color={selected === i ? (ele.isCorrect ? "green" : "red") : null} value={ele.text}
-                                key={i}
+                    currQuestion < questions.length &&
+                    <div className="card" >
+                         <Confetti className ="confeti"
+                         active = {confetiDisplay}
+                         config ={config}
                             />
-                        )}
+                        <h1 className="score">Score :{score}</h1>
+                        <Question question={questions[currQuestion].question} className="question" />
+                        <div className="options">
+                            {questions[currQuestion].answer.map((ele, i) =>
+                                <Option
+                                    click={() => { updateSelected(ele, i) }}
+                                    color={selected === i ? (ele.isCorrect ? "green" : "red") : null} value={ele.text}
+                                    key={i}
+                                />
+                            )}
+                           
+                        </div>
+                        <div className="bar-container">
+                            <div className="bar" style={{ width: `${currWidth}%` }}></div>
+                        </div>
                     </div>
-                    <div className="bar-container">
-                        <div className="bar" style={{ width: `${currWidth}%` }}></div>
-                    </div>
-                </div>
                 } />
-                <Route path="/results" element ={<Results question ={questions} score={score} answers ={ansArr}/>} />
+                <Route path="/results" element={<Results question={questions} score={score} answers={ansArr} />} />
             </Routes>
         </div>
     )
 }
 export default Quiz
-//useeffect willl be usefull when we have to restart timer for next question
-// it will depend on quetion change
